@@ -98,32 +98,3 @@ def run_daily(settings: Settings | None = None, output_path: Path = LATEST_PICKS
         league=None,
         sport="football",
         min_ev=settings.expected_value_threshold,
-        settings=settings,
-        production_mode=True,
-        debug=False,
-        window_hours=window_hours,
-        max_window_hours=window_hours,
-        include_secondary_window=False,
-    )
-    payload = export_latest_picks(recommendations, output_path=output_path)
-    logger.info(
-        "Daily run complete: picks=%s matches=%s recommendations=%s",
-        len(payload["picks"]),
-        source_summary.get("future_matches_in_window"),
-        summary.get("recommendations_generated"),
-    )
-    return payload
-
-
-def main() -> int:
-    try:
-        payload = run_daily()
-    except Exception:
-        logger.exception("Daily betting analysis failed")
-        return 1
-    logger.info("Wrote %s picks to %s", len(payload["picks"]), LATEST_PICKS_PATH)
-    return 0
-
-
-if __name__ == "__main__":
-    sys.exit(main())
