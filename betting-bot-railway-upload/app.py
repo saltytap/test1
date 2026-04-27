@@ -13,7 +13,8 @@ from src.config import DATA_DIR
 
 DEFAULT_ALLOWED_ORIGINS = "https://bettrack.org,http://localhost:3000"
 DEFAULT_PICKS_PATH = DATA_DIR / "latest_picks.json"
-APP_VERSION = "2026-04-27-btts-refresh-v2"
+APP_VERSION = "2026-04-27-btts-refresh-v3"
+LAST_REFRESH_ERROR: str | None = None
 
 
 def _allowed_origins() -> list[str]:
@@ -45,13 +46,16 @@ def _should_refresh(path: Path) -> bool:
 
 
 def _refresh_if_needed(path: Path) -> None:
+    global LAST_REFRESH_ERROR
     if not _should_refresh(path) or not os.getenv("FOOTYSTATS_API_KEY"):
         return
     try:
         from run_daily import run_daily
 
         run_daily(output_path=path)
-    except Exception:
+        LAST_REFRESH_ERROR = None
+    except Exception as exc:
+        LAST_REFRESH_ERROR = f"{type(exc).__name__}: {exc}"
         # Keep the public API safe for BetTrack even if the data provider is down.
         return
 
@@ -84,6 +88,7 @@ def create_app(picks_path: Path | None = None) -> FastAPI:
             "picks_file_exists": path.exists(),
             "last_updated": payload.get("last_updated"),
             "pick_count": len(payload.get("picks", [])),
+            "last_refresh_error": LAST_REFRESH_ERROR,
         }
 
     return app
