@@ -14,7 +14,7 @@ from src.config import DATA_DIR
 
 DEFAULT_ALLOWED_ORIGINS = "https://bettrack.org,http://localhost:3000"
 DEFAULT_PICKS_PATH = DATA_DIR / "latest_picks.json"
-APP_VERSION = "2026-04-27-btts-refresh-v3"
+APP_VERSION = "2026-04-27-btts-refresh-v4-no-run-daily-import"
 LAST_REFRESH_ERROR: str | None = None
 
 
@@ -172,3 +172,5 @@ def create_app(picks_path: Path | None = None) -> FastAPI:
 
 
 app = create_app()
+
+Latest turn
