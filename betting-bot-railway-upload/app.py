@@ -13,6 +13,7 @@ from src.config import DATA_DIR
 
 DEFAULT_ALLOWED_ORIGINS = "https://bettrack.org,http://localhost:3000"
 DEFAULT_PICKS_PATH = DATA_DIR / "latest_picks.json"
+APP_VERSION = "2026-04-27-btts-refresh-v2"
 
 
 def _allowed_origins() -> list[str]:
@@ -70,6 +71,20 @@ def create_app(picks_path: Path | None = None) -> FastAPI:
     def get_picks() -> dict[str, Any]:
         _refresh_if_needed(path)
         return _load_picks(path)
+
+    @app.get("/api/status")
+    def get_status() -> dict[str, Any]:
+        payload = _load_picks(path)
+        return {
+            "version": APP_VERSION,
+            "footystats_key_configured": bool(os.getenv("FOOTYSTATS_API_KEY")),
+            "window_hours": os.getenv("BETTING_BOT_WINDOW_HOURS", "24"),
+            "max_leagues": os.getenv("BETTING_BOT_MAX_LEAGUES", "50"),
+            "max_results": os.getenv("BETTING_BOT_MAX_RESULTS", "30"),
+            "picks_file_exists": path.exists(),
+            "last_updated": payload.get("last_updated"),
+            "pick_count": len(payload.get("picks", [])),
+        }
 
     return app
 
